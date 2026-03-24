@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - BaseLab Wholesale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <a href="/">
+          <img src="images/logo.svg" alt="BaseLab Wholesale" />
+        </a>
+      </div>
+
+      <h2 class="auth-title">Create your account</h2>
+      <p class="auth-subtitle">Join 2,000+ wholesale buyers</p>
+
+      <form id="register-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="firstName">First Name</label>
+            <input
+              class="form-input"
+              type="text"
+              id="firstName"
+              name="firstName"
+              placeholder="Jane"
+              required
+              autocomplete="given-name"
+            />
+            <span class="form-error" id="firstName-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lastName">Last Name</label>
+            <input
+              class="form-input"
+              type="text"
+              id="lastName"
+              name="lastName"
+              placeholder="Doe"
+              required
+              autocomplete="family-name"
+            />
+            <span class="form-error" id="lastName-error"></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input
+            class="form-input"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          />
+          <span class="form-error" id="email-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="company">Company</label>
+          <input
+            class="form-input"
+            type="text"
+            id="company"
+            name="company"
+            placeholder="Your company name"
+            autocomplete="organization"
+          />
+          <span class="form-hint">Optional — for business accounts</span>
+          <span class="form-error" id="company-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input
+            class="form-input"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Create a password"
+            required
+            autocomplete="new-password"
+          />
+          <span class="form-hint">Must be at least 8 characters with a number and a letter.</span>
+          <span class="form-error" id="password-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Confirm Password</label>
+          <input
+            class="form-input"
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            placeholder="Confirm your password"
+            required
+            autocomplete="new-password"
+          />
+          <span class="form-error" id="confirmPassword-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" id="terms" name="terms" required />
+            <span>I agree to the <a href="/terms.html" class="auth-link">Terms of Service</a> and <a href="/privacy.html" class="auth-link">Privacy Policy</a></span>
+          </label>
+          <span class="form-error" id="terms-error"></span>
+        </div>
+
+        <div class="form-error-global" id="register-error" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="register-btn">
+          Create Account
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <p class="auth-footer">
+        Already have an account? <a href="/login.html" class="auth-link">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initCartDrawer();
+      loadUser();
+
+      if (getToken()) {
+        window.location.href = '/';
+        return;
+      }
+
+      const form = document.getElementById('register-form');
+      const registerBtn = document.getElementById('register-btn');
+      const registerError = document.getElementById('register-error');
+
+      const fields = {
+        firstName: document.getElementById('firstName'),
+        lastName: document.getElementById('lastName'),
+        email: document.getElementById('email'),
+        company: document.getElementById('company'),
+        password: document.getElementById('password'),
+        confirmPassword: document.getElementById('confirmPassword'),
+        terms: document.getElementById('terms')
+      };
+
+      const fieldErrors = {
+        firstName: document.getElementById('firstName-error'),
+        lastName: document.getElementById('lastName-error'),
+        email: document.getElementById('email-error'),
+        company: document.getElementById('company-error'),
+        password: document.getElementById('password-error'),
+        confirmPassword: document.getElementById('confirmPassword-error'),
+        terms: document.getElementById('terms-error')
+      };
+
+      function clearErrors() {
+        registerError.style.display = 'none';
+        registerError.textContent = '';
+        Object.keys(fieldErrors).forEach(function (key) {
+          fieldErrors[key].textContent = '';
+        });
+        Object.keys(fields).forEach(function (key) {
+          if (fields[key].type !== 'checkbox') {
+            fields[key].classList.remove('form-input-error');
+          }
+        });
+      }
+
+      function showFieldError(field, message) {
+        if (fieldErrors[field]) {
+          fieldErrors[field].textContent = message;
+        }
+        if (fields[field] && fields[field].type !== 'checkbox') {
+          fields[field].classList.add('form-input-error');
+        }
+      }
+
+      function setLoading(loading) {
+        if (loading) {
+          registerBtn.disabled = true;
+          registerBtn.dataset.originalText = registerBtn.textContent;
+          registerBtn.textContent = 'Creating account...';
+        } else {
+          registerBtn.disabled = false;
+          registerBtn.textContent = registerBtn.dataset.originalText || 'Create Account';
+        }
+      }
+
+      function validateForm() {
+        var valid = true;
+
+        if (!fields.firstName.value.trim()) {
+          showFieldError('firstName', 'First name is required.');
+          valid = false;
+        }
+        if (!fields.lastName.value.trim()) {
+          showFieldError('lastName', 'Last name is required.');
+          valid = false;
+        }
+        if (!fields.email.value.trim()) {
+          showFieldError('email', 'Email is required.');
+          valid = false;
+        }
+        if (!fields.password.value) {
+          showFieldError('password', 'Password is required.');
+          valid = false;
+        } else if (fields.password.value.length < 8) {
+          showFieldError('password', 'Password must be at least 8 characters.');
+          valid = false;
+        }
+        if (!fields.confirmPassword.value) {
+          showFieldError('confirmPassword', 'Please confirm your password.');
+          valid = false;
+        } else if (fields.password.value !== fields.confirmPassword.value) {
+          showFieldError('confirmPassword', 'Passwords do not match.');
+          valid = false;
+        }
+        if (!fields.terms.checked) {
+          showFieldError('terms', 'You must agree to the Terms of Service and Privacy Policy.');
+          valid = false;
+        }
+
+        return valid;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErrors();
+
+        if (!validateForm()) return;
+
+        setLoading(true);
+
+        var payload = {
+          email: fields.email.value.trim(),
+          password: fields.password.value,
+          firstName: fields.firstName.value.trim(),
+          lastName: fields.lastName.value.trim()
+        };
+
+        var companyValue = fields.company.value.trim();
+        if (companyValue) {
+          payload.company = companyValue;
+        }
+
+        try {
+          var data = await API.register(payload);
+          setToken(data.accessToken);
+          loadUser();
+          window.location.href = '/';
+        } catch (err) {
+          setLoading(false);
+
+          if (err.errors && Array.isArray(err.errors)) {
+            err.errors.forEach(function (error) {
+              if (error.field) {
+                showFieldError(error.field, error.message);
+              } else {
+                registerError.textContent = error.message || 'Registration failed. Please try again.';
+                registerError.style.display = 'block';
+              }
+            });
+          } else {
+            var message = (err && err.message) ? err.message : 'Registration failed. Please try again.';
+            registerError.textContent = message;
+            registerError.style.display = 'block';
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

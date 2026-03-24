@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Detail - BaseLab Wholesale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: #1e293b; background: #f8fafc; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 24px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-logo { display: flex; align-items: baseline; gap: 6px; font-size: 22px; font-weight: 800; color: #0f172a; }
+    .header-logo span { font-size: 12px; font-weight: 500; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; }
+    .header-nav { display: flex; align-items: center; gap: 24px; }
+    .nav-link { font-size: 14px; font-weight: 500; color: #475569; transition: color .2s; }
+    .nav-link:hover { color: #0f172a; }
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    .cart-btn { position: relative; background: none; border: none; cursor: pointer; font-size: 22px; padding: 6px; color: #475569; transition: color .2s; }
+    .cart-btn:hover { color: #0f172a; }
+    .cart-badge {
+      position: absolute; top: -4px; right: -6px;
+      background: #16a34a; color: #fff; font-size: 10px; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+    }
+    .header-user-state { display: flex; align-items: center; gap: 12px; }
+
+    /* Container */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Breadcrumb */
+    .breadcrumb { padding: 16px 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; flex-wrap: wrap; }
+    .breadcrumb a { color: #64748b; transition: color .2s; }
+    .breadcrumb a:hover { color: #0f172a; }
+    .breadcrumb .separator { color: #cbd5e1; }
+    .breadcrumb .current { color: #1e293b; font-weight: 500; }
+
+    /* Product Detail */
+    .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 24px 0 64px; }
+    @media (max-width: 768px) { .product-detail { grid-template-columns: 1fr; gap: 32px; } }
+
+    .product-image-main {
+      width: 100%; height: 400px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .product-image-main .product-icon-large { font-size: 120px; filter: drop-shadow(0 4px 24px rgba(0,0,0,.1)); }
+    .product-image-main .product-badge {
+      position: absolute; top: 16px; left: 16px;
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      background: #16a34a; color: #fff;
+    }
+    .product-image-main .product-badge.hot { background: #dc2626; }
+    .product-image-main .product-badge.new { background: #2563eb; }
+    .product-image-main .product-badge.sale { background: #f59e0b; color: #1e293b; }
+
+    .product-info-col { display: flex; flex-direction: column; gap: 16px; }
+    .product-category-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #6366f1; }
+    .product-title { font-size: 32px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+    .product-sku { font-size: 13px; color: #94a3b8; font-weight: 500; }
+
+    .product-pricing-block { display: flex; flex-direction: column; gap: 6px; padding: 20px; background: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0; }
+    .price-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .price-wholesale { font-size: 36px; font-weight: 800; color: #16a34a; }
+    .price-original { font-size: 18px; color: #94a3b8; text-decoration: line-through; font-weight: 500; }
+    .price-discount-tag { font-size: 13px; font-weight: 700; color: #fff; background: #16a34a; padding: 3px 10px; border-radius: 20px; }
+    .price-savings { font-size: 14px; color: #16a34a; font-weight: 600; }
+
+    .product-description { font-size: 15px; color: #475569; line-height: 1.7; }
+
+    .quantity-selector { display: flex; align-items: center; gap: 0; }
+    .quantity-selector button {
+      width: 44px; height: 44px; border: 1px solid #e2e8f0; background: #fff;
+      font-size: 20px; font-weight: 600; color: #475569; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .quantity-selector button:hover { background: #f1f5f9; color: #0f172a; }
+    .quantity-selector button:first-child { border-radius: 8px 0 0 8px; }
+    .quantity-selector button:last-child { border-radius: 0 8px 8px 0; }
+    .quantity-selector input {
+      width: 72px; height: 44px; border: 1px solid #e2e8f0; border-left: none; border-right: none;
+      text-align: center; font-size: 16px; font-weight: 600; font-family: 'Inter', sans-serif;
+      color: #0f172a; outline: none;
+    }
+    .quantity-selector input:focus { border-color: #6366f1; }
+    .min-order-note { font-size: 13px; color: #94a3b8; font-weight: 500; }
+
+    .product-actions { display: flex; gap: 12px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; border: none; transition: all .2s; }
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,.4); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-add-cart-large { flex: 1; padding: 16px 32px; font-size: 16px; }
+    .btn-loading { pointer-events: none; opacity: .7; }
+
+    .btn-wishlist {
+      width: 52px; height: 52px; border-radius: 10px; border: 1px solid #e2e8f0;
+      background: #fff; font-size: 22px; cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .btn-wishlist:hover { border-color: #f43f5e; background: #fff1f2; }
+    .btn-wishlist.active { border-color: #f43f5e; background: #fff1f2; color: #f43f5e; }
+
+    .product-info-bullets { list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .product-info-bullets li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #475569; font-weight: 500; }
+    .product-info-bullets li .bullet-icon { font-size: 16px; flex-shrink: 0; }
+
+    /* Related Products */
+    .related-section { padding: 48px 0 80px; border-top: 1px solid #e2e8f0; }
+    .related-heading { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 32px; }
+    .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    @media (max-width: 1024px) { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .products-grid { grid-template-columns: 1fr; } }
+
+    .product-card { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; transition: all .3s; display: flex; flex-direction: column; }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.08); }
+    .product-link { display: block; text-decoration: none; color: inherit; }
+    .product-image { height: 180px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .product-icon { font-size: 56px; filter: drop-shadow(0 2px 8px rgba(0,0,0,.08)); }
+    .product-badge { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; background: #16a34a; color: #fff; }
+    .product-badge.hot { background: #dc2626; }
+    .product-badge.new { background: #2563eb; }
+    .product-badge.sale { background: #f59e0b; color: #1e293b; }
+    .product-info { padding: 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .product-category { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #6366f1; }
+    .product-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .product-pricing { display: flex; align-items: baseline; gap: 8px; }
+    .product-price { font-size: 18px; font-weight: 800; color: #16a34a; }
+    .product-original { font-size: 13px; color: #94a3b8; text-decoration: line-through; }
+    .product-discount { font-size: 12px; font-weight: 700; color: #16a34a; background: #f0fdf4; padding: 2px 6px; border-radius: 4px; }
+    .product-meta { font-size: 12px; color: #94a3b8; font-weight: 500; }
+    .product-card .btn-add-cart { margin: 0 16px 16px; }
+    .btn-block { display: flex; width: 100%; }
+
+    /* Skeleton Loaders */
+    .skeleton { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-image { height: 400px; border-radius: 16px; }
+    .skeleton-text { height: 16px; margin-bottom: 12px; }
+    .skeleton-text.w60 { width: 60%; }
+    .skeleton-text.w40 { width: 40%; }
+    .skeleton-text.w80 { width: 80%; }
+    .skeleton-title { height: 36px; width: 80%; margin-bottom: 16px; }
+    .skeleton-price { height: 44px; width: 50%; margin-bottom: 12px; }
+    .skeleton-card { height: 320px; border-radius: 14px; }
+
+    /* Footer */
+    .footer { background: #0f172a; color: #e2e8f0; padding: 64px 24px 32px; }
+    .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+    .footer-col h4 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 16px; }
+    .footer-col p { font-size: 13px; color: #94a3b8; line-height: 1.7; }
+    .footer-col a { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 8px; transition: color .2s; }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid #1e293b; text-align: center; font-size: 12px; color: #64748b; }
+
+    /* Drawer overrides (in case styles.css is empty) */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer { position: fixed; top: 0; right: 0; width: 400px; max-width: 90vw; height: 100vh; background: #fff; z-index: 201; transform: translateX(100%); transition: transform .3s ease; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(0,0,0,.1); }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid #e2e8f0; }
+    .drawer-header h3 { font-size: 18px; font-weight: 700; }
+    .drawer-close { background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 0 4px; }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+    .drawer-footer { padding: 20px; border-top: 1px solid #e2e8f0; }
+    .drawer-empty { text-align: center; padding: 40px 20px; }
+    .drawer-empty p { color: #94a3b8; margin-bottom: 16px; }
+    .drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+    .drawer-item-icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .drawer-item-info { flex: 1; min-width: 0; }
+    .drawer-item-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drawer-item-price { font-size: 12px; color: #64748b; }
+    .drawer-item-total { font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; }
+    .drawer-item-remove { background: none; border: none; font-size: 18px; cursor: pointer; color: #94a3b8; padding: 4px; }
+    .drawer-item-remove:hover { color: #dc2626; }
+    .drawer-totals { margin-bottom: 16px; }
+    .drawer-total-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+    .text-green { color: #16a34a; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <a href="/index.html" class="header-logo">BaseLab <span>Wholesale</span></a>
+    <nav class="header-nav">
+      <a href="/shop.html" class="nav-link">Shop</a>
+      <a href="/categories.html" class="nav-link">Categories</a>
+      <a href="/pricing.html" class="nav-link">Pricing</a>
+    </nav>
+    <div class="header-actions">
+      <button class="cart-btn" onclick="openCartDrawer()" aria-label="Open cart">
+        &#128722;
+        <span class="cart-badge">0</span>
+      </button>
+      <div class="header-user-state"></div>
+    </div>
+  </header>
+
+  <!-- Breadcrumb -->
+  <div class="container">
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/index.html">Home</a>
+      <span class="separator">/</span>
+      <a href="/shop.html">Shop</a>
+      <span class="separator">/</span>
+      <span class="skeleton" style="width:80px;height:14px;display:inline-block;"></span>
+      <span class="separator">/</span>
+      <span class="skeleton" style="width:120px;height:14px;display:inline-block;"></span>
+    </nav>
+  </div>
+
+  <!-- Product Detail -->
+  <section class="container">
+    <div class="product-detail" id="product-detail">
+      <!-- Left Column: Image -->
+      <div id="product-image-col">
+        <div class="skeleton skeleton-image"></div>
+      </div>
+
+      <!-- Right Column: Info -->
+      <div class="product-info-col" id="product-info-col">
+        <div class="skeleton skeleton-text w40"></div>
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-text w60"></div>
+        <div class="skeleton skeleton-price"></div>
+        <div class="skeleton skeleton-text w80"></div>
+        <div class="skeleton skeleton-text w80"></div>
+        <div class="skeleton" style="height:44px;width:200px;margin-top:12px;"></div>
+        <div class="skeleton" style="height:52px;width:100%;margin-top:12px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Products -->
+  <section class="container related-section" id="related-section">
+    <h2 class="related-heading">You May Also Like</h2>
+    <div class="products-grid" id="related-grid">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>BaseLab</h4>
+        <p>Premium wholesale products for businesses of all sizes. Quality guaranteed with competitive pricing.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <a href="/shop.html">Shop All</a>
+        <a href="/categories.html">Categories</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/account.html">My Account</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a href="/contact.html">Contact Us</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/shipping.html">Shipping Info</a>
+        <a href="/returns.html">Returns</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>support@baselab.com</p>
+        <p>1-800-BASE-LAB</p>
+        <p>Mon-Fri 9am-5pm EST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 BaseLab Wholesale. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      initCartDrawer();
+      loadUser();
+
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('id');
+      if (!productId) {
+        window.location.href = '/shop.html';
+        return;
+      }
+
+      let product = null;
+      let wishlistIds = [];
+
+      // Load wishlist if logged in
+      if (isLoggedIn()) {
+        try {
+          const wishlist = await API.getWishlist();
+          wishlistIds = (wishlist.items || wishlist || []).map(function(item) {
+            return item.productId || item.product_id || item.id;
+          });
+        } catch (e) {
+          wishlistIds = [];
+        }
+      }
+
+      // Fetch product
+      try {
+        product = await API.getProduct(productId);
+      } catch (e) {
+        document.getElementById('product-detail').innerHTML =
+          '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;">' +
+          '<h2 style="font-size:24px;font-weight:700;color:#0f172a;margin-bottom:12px;">Product Not Found</h2>' +
+          '<p style="color:#64748b;margin-bottom:24px;">The product you are looking for does not exist or has been removed.</p>' +
+          '<a href="/shop.html" class="btn btn-primary">Back to Shop</a></div>';
+        document.getElementById('related-section').style.display = 'none';
+        return;
+      }
+
+      // Update page title
+      document.title = product.name + ' - BaseLab Wholesale';
+
+      // Render breadcrumb
+      var categoryLabel = product.category_label || product.categoryLabel || product.category || 'Products';
+      var categorySlug = (product.category || '').toLowerCase().replace(/\s+/g, '-');
+      document.getElementById('breadcrumb').innerHTML =
+        '<a href="/index.html">Home</a>' +
+        '<span class="separator">/</span>' +
+        '<a href="/shop.html">Shop</a>' +
+        '<span class="separator">/</span>' +
+        '<a href="/shop.html?category=' + encodeURIComponent(product.category || '') + '">' + categoryLabel + '</a>' +
+        '<span class="separator">/</span>' +
+        '<span class="current">' + product.name + '</span>';
+
+      // Compute pricing values
+      var discount = product.discount_percent || Math.round((product.original_price - product.price) / product.original_price * 100);
+      var savings = product.savings_per_unit || (product.original_price - product.price).toFixed(2);
+      var minQty = product.min_qty || 1;
+      var unit = product.unit || 'units';
+      var isInWishlist = wishlistIds.indexOf(product.id) !== -1;
+
+      // Render product image column
+      var badgeHtml = '';
+      if (product.badge) {
+        var badgeClass = product.badge_type || product.badgeType || '';
+        badgeHtml = '<span class="product-badge ' + badgeClass + '">' + product.badge + '</span>';
+      }
+      document.getElementById('product-image-col').innerHTML =
+        '<div class="product-image-main" style="background:' + (product.gradient || 'linear-gradient(135deg,#667eea,#764ba2)') + '">' +
+          '<span class="product-icon-large">' + (product.icon || '') + '</span>' +
+          badgeHtml +
+        '</div>';
+
+      // Render product info column
+      document.getElementById('product-info-col').innerHTML =
+        '<div class="product-category-label">' + categoryLabel + '</div>' +
+        '<h1 class="product-title">' + product.name + '</h1>' +
+        '<div class="product-sku">SKU: ' + (product.sku || 'N/A') + '</div>' +
+
+        '<div class="product-pricing-block">' +
+          '<div class="price-row">' +
+            '<span class="price-wholesale">$' + product.price.toFixed(2) + '</span>' +
+            '<span class="price-original">$' + product.original_price.toFixed(2) + '</span>' +
+            '<span class="price-discount-tag">-' + discount + '%</span>' +
+          '</div>' +
+          '<div class="price-savings">You save $' + parseFloat(savings).toFixed(2) + ' per ' + unit + '</div>' +
+        '</div>' +
+
+        '<p class="product-description">' + (product.description || 'Premium wholesale product available in bulk quantities at competitive prices.') + '</p>' +
+
+        '<div>' +
+          '<div class="quantity-selector" id="qty-selector">' +
+            '<button type="button" id="qty-minus" aria-label="Decrease quantity">&minus;</button>' +
+            '<input type="number" id="qty-input" value="' + minQty + '" min="' + minQty + '" step="1">' +
+            '<button type="button" id="qty-plus" aria-label="Increase quantity">+</button>' +
+          '</div>' +
+          '<div class="min-order-note" style="margin-top:8px;">Minimum order: ' + minQty + ' ' + unit + '</div>' +
+        '</div>' +
+
+        '<div class="product-actions">' +
+          '<button class="btn btn-primary btn-add-cart-large" id="btn-add-to-cart">Add to Cart</button>' +
+          '<button class="btn-wishlist' + (isInWishlist ? ' active' : '') + '" id="btn-wishlist" aria-label="Toggle wishlist">' +
+            (isInWishlist ? '\u2665' : '\u2661') +
+          '</button>' +
+        '</div>' +
+
+        '<ul class="product-info-bullets">' +
+          '<li><span class="bullet-icon">\uD83D\uDE9A</span> Free shipping over $200</li>' +
+          '<li><span class="bullet-icon">\uD83D\uDCE6</span> Bulk discounts available</li>' +
+          '<li><span class="bullet-icon">\uD83D\uDCB3</span> Net 30 terms</li>' +
+        '</ul>';
+
+      // ---- Quantity +/- handlers ----
+      var qtyInput = document.getElementById('qty-input');
+      var qtyMinus = document.getElementById('qty-minus');
+      var qtyPlus = document.getElementById('qty-plus');
+
+      qtyMinus.addEventListener('click', function() {
+        var current = parseInt(qtyInput.value, 10) || minQty;
+        if (current > minQty) {
+          qtyInput.value = current - 1;
+        }
+      });
+
+      qtyPlus.addEventListener('click', function() {
+        var current = parseInt(qtyInput.value, 10) || minQty;
+        qtyInput.value = current + 1;
+      });
+
+      qtyInput.addEventListener('change', function() {
+        var val = parseInt(qtyInput.value, 10);
+        if (isNaN(val) || val < minQty) {
+          qtyInput.value = minQty;
+        }
+      });
+
+      qtyInput.addEventListener('blur', function() {
+        var val = parseInt(qtyInput.value, 10);
+        if (isNaN(val) || val < minQty) {
+          qtyInput.value = minQty;
+        }
+      });
+
+      // ---- Add to Cart handler ----
+      var addToCartBtn = document.getElementById('btn-add-to-cart');
+      addToCartBtn.addEventListener('click', async function() {
+        var qty = parseInt(qtyInput.value, 10) || minQty;
+        if (qty < minQty) {
+          showToast('Minimum order is ' + minQty + ' ' + unit, 'error');
+          qtyInput.value = minQty;
+          return;
+        }
+        addToCartBtn.classList.add('btn-loading');
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Adding...';
+        try {
+          await Cart.add(product.id, qty);
+          showToast('Added ' + qty + ' ' + unit + ' to cart!');
+          await renderCartDrawer();
+        } catch (e) {
+          showToast(e.message || 'Failed to add to cart', 'error');
+        } finally {
+          addToCartBtn.classList.remove('btn-loading');
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = 'Add to Cart';
+        }
+      });
+
+      // ---- Wishlist toggle ----
+      var wishlistBtn = document.getElementById('btn-wishlist');
+      var wishlisted = isInWishlist;
+
+      wishlistBtn.addEventListener('click', async function() {
+        if (!isLoggedIn()) {
+          window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+          return;
+        }
+        wishlistBtn.disabled = true;
+        try {
+          if (wishlisted) {
+            await API.removeWishlist(product.id);
+            wishlisted = false;
+            wishlistBtn.innerHTML = '\u2661';
+            wishlistBtn.classList.remove('active');
+            showToast('Removed from wishlist');
+          } else {
+            await API.addWishlist(product.id);
+            wishlisted = true;
+            wishlistBtn.innerHTML = '\u2665';
+            wishlistBtn.classList.add('active');
+            showToast('Added to wishlist');
+          }
+        } catch (e) {
+          showToast(e.message || 'Wishlist update failed', 'error');
+        } finally {
+          wishlistBtn.disabled = false;
+        }
+      });
+
+      // ---- Related Products ----
+      try {
+        var relatedData = await API.getRelated(productId);
+        var relatedProducts = relatedData.products || relatedData || [];
+        var relatedGrid = document.getElementById('related-grid');
+
+        if (relatedProducts.length === 0) {
+          document.getElementById('related-section').style.display = 'none';
+        } else {
+          var cards = relatedProducts.slice(0, 4).map(function(p) {
+            return buildProductCard(p);
+          }).join('');
+          relatedGrid.innerHTML = cards;
+        }
+      } catch (e) {
+        document.getElementById('related-section').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

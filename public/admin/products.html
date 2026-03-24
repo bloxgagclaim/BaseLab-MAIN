@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — BaseLab Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+
+    .admin-layout { display: flex; min-height: 100vh; }
+
+    .admin-sidebar {
+      width: 240px; background: #0f172a; color: #fff; padding: 0;
+      display: flex; flex-direction: column; position: fixed; top: 0; left: 0;
+      height: 100vh; z-index: 100; overflow-y: auto;
+    }
+    .admin-logo {
+      padding: 24px 20px; font-size: 18px; font-weight: 800;
+      letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .admin-nav { display: flex; flex-direction: column; padding: 12px 0; }
+    .admin-nav a {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: all .15s ease; border-left: 3px solid transparent;
+    }
+    .admin-nav a:hover { color: #e2e8f0; background: rgba(255,255,255,.04); }
+    .admin-nav a.active {
+      color: #fff; background: rgba(255,255,255,.08);
+      border-left-color: #3b82f6;
+    }
+
+    .admin-main { flex: 1; margin-left: 240px; padding: 32px; }
+
+    .admin-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .admin-header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 18px; border-radius: 8px; font-size: 14px;
+      font-weight: 600; border: none; cursor: pointer;
+      transition: all .15s ease; text-decoration: none;
+    }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: #e2e8f0; color: #475569; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+    .search-box {
+      width: 100%; padding: 10px 16px; border: 1px solid #e2e8f0;
+      border-radius: 8px; font-size: 14px; font-family: inherit;
+      background: #fff; margin-bottom: 16px; outline: none;
+      transition: border-color .15s ease;
+    }
+    .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+
+    .table-wrap {
+      background: #fff; border-radius: 12px; overflow-x: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 32px;
+    }
+    .table-wrap table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    .table-wrap th {
+      text-align: left; padding: 12px 14px; font-size: 11px; font-weight: 600;
+      color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;
+      background: #f8fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+    }
+    .table-wrap td {
+      padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .table-wrap tr:last-child td { border-bottom: none; }
+
+    .product-icon-cell {
+      width: 40px; height: 40px; border-radius: 8px; display: flex;
+      align-items: center; justify-content: center; font-size: 20px;
+    }
+    .stock-dot {
+      display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    }
+    .stock-dot.in-stock { background: #22c55e; }
+    .stock-dot.out-of-stock { background: #ef4444; }
+
+    .actions-cell { display: flex; gap: 6px; }
+
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 640px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px; border-bottom: 1px solid #e2e8f0;
+    }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px; border: none;
+      background: #f1f5f9; cursor: pointer; font-size: 18px; color: #64748b;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: #e2e8f0; }
+
+    .modal-body { padding: 24px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
+      font-size: 14px; font-family: inherit; outline: none;
+      transition: border-color .15s ease;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .form-check {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #3b82f6; }
+
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 16px 24px; border-top: 1px solid #e2e8f0;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite; border-radius: 6px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    .badge-preview {
+      display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+    }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+
+    @media (max-width: 768px) {
+      .admin-sidebar { width: 200px; }
+      .admin-main { margin-left: 200px; padding: 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">BaseLab Admin</div>
+      <nav class="admin-nav">
+        <a href="/admin/index.html">📊 Dashboard</a>
+        <a href="/admin/products.html" class="active">📦 Products</a>
+        <a href="/admin/orders.html">📋 Orders</a>
+        <a href="#" onclick="logout();return false;">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Products</h1>
+        <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
+      </div>
+
+      <input type="text" class="search-box" id="search-input" placeholder="Search products by name, SKU, or category...">
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>SKU</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Original</th>
+              <th>Min Qty</th>
+              <th>Badge</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-body">
+            <tr><td colspan="10"><div class="skeleton" style="height:16px;width:100%;margin:8px 0;"></div></td></tr>
+            <tr><td colspan="10"><div class="skeleton" style="height:16px;width:100%;margin:8px 0;"></div></td></tr>
+            <tr><td colspan="10"><div class="skeleton" style="height:16px;width:100%;margin:8px 0;"></div></td></tr>
+            <tr><td colspan="10"><div class="skeleton" style="height:16px;width:100%;margin:8px 0;"></div></td></tr>
+            <tr><td colspan="10"><div class="skeleton" style="height:16px;width:100%;margin:8px 0;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="product-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Add Product</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form" class="form-grid">
+          <input type="hidden" id="edit-product-id" value="">
+
+          <div class="form-group">
+            <label for="field-name">Name</label>
+            <input type="text" id="field-name" required>
+          </div>
+          <div class="form-group">
+            <label for="field-sku">SKU</label>
+            <input type="text" id="field-sku" required>
+          </div>
+          <div class="form-group">
+            <label for="field-category">Category</label>
+            <select id="field-category" required>
+              <option value="glass">Glass</option>
+              <option value="ceramic">Ceramic</option>
+              <option value="metal">Metal</option>
+              <option value="bundles">Bundles</option>
+              <option value="supplies">Supplies</option>
+              <option value="specialty">Specialty</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="field-category-label">Category Label</label>
+            <input type="text" id="field-category-label" placeholder="e.g. Glass Vases">
+          </div>
+          <div class="form-group">
+            <label for="field-price">Price</label>
+            <input type="number" id="field-price" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="field-original-price">Original Price</label>
+            <input type="number" id="field-original-price" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="field-min-qty">Min Qty</label>
+            <input type="number" id="field-min-qty" min="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label for="field-unit">Unit</label>
+            <select id="field-unit">
+              <option value="ea">ea</option>
+              <option value="set">set</option>
+              <option value="pack">pack</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="field-badge">Badge (optional)</label>
+            <input type="text" id="field-badge" placeholder="e.g. Best Seller">
+          </div>
+          <div class="form-group">
+            <label for="field-badge-type">Badge Type</label>
+            <select id="field-badge-type">
+              <option value="">None</option>
+              <option value="badge-dark">Dark</option>
+              <option value="badge-red">Red</option>
+              <option value="badge-primary">Primary</option>
+              <option value="badge-green">Green</option>
+              <option value="badge-amber">Amber</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label for="field-description">Description</label>
+            <textarea id="field-description" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="field-icon">Icon (emoji)</label>
+            <input type="text" id="field-icon" value="📦" maxlength="4">
+          </div>
+          <div class="form-group">
+            <label for="field-gradient">Gradient</label>
+            <input type="text" id="field-gradient" placeholder="linear-gradient(135deg,#f8fafc,#e2e8f0)">
+          </div>
+          <div class="form-group">
+            <label for="field-sort-order">Sort Order</label>
+            <input type="number" id="field-sort-order" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <div class="form-check">
+              <input type="checkbox" id="field-in-stock" checked>
+              <label for="field-in-stock" style="font-weight:500;">In Stock</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="save-btn" onclick="saveProduct()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/store.js"></script>
+  <script>
+    let allProducts = [];
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatCurrency(val) {
+      return '$' + Number(val).toFixed(2);
+    }
+
+    function renderProducts(products) {
+      const tbody = document.getElementById('products-body');
+      if (products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No products found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = products.map(p => `
+        <tr>
+          <td>
+            <div class="product-icon-cell" style="background:${escapeHtml(p.gradient || 'linear-gradient(135deg,#f8fafc,#e2e8f0)')}">
+              ${p.icon || '📦'}
+            </div>
+          </td>
+          <td style="font-family:monospace;font-size:12px;color:#64748b;">${escapeHtml(p.sku)}</td>
+          <td style="font-weight:600;">${escapeHtml(p.name)}</td>
+          <td style="text-transform:capitalize;">${escapeHtml(p.category_label || p.category)}</td>
+          <td style="font-weight:600;">${formatCurrency(p.price)}</td>
+          <td style="color:#94a3b8;text-decoration:line-through;">${formatCurrency(p.original_price)}</td>
+          <td>${p.min_qty} ${escapeHtml(p.unit)}</td>
+          <td>${p.badge ? '<span class="badge-preview ' + escapeHtml(p.badge_type || '') + '">' + escapeHtml(p.badge) + '</span>' : '<span style="color:#cbd5e1;">—</span>'}</td>
+          <td><span class="stock-dot ${p.in_stock ? 'in-stock' : 'out-of-stock'}"></span></td>
+          <td>
+            <div class="actions-cell">
+              <button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deactivateProduct(${p.id}, '${escapeHtml(p.name)}')">Deactivate</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadProducts() {
+      try {
+        const data = await API.getProducts({ limit: 100 });
+        allProducts = data.products || [];
+        renderProducts(allProducts);
+      } catch (err) {
+        console.error('Load products error:', err);
+        document.getElementById('products-body').innerHTML =
+          '<tr><td colspan="10" class="empty-state" style="color:#dc2626;">Failed to load products</td></tr>';
+      }
+    }
+
+    function filterProducts(query) {
+      if (!query) {
+        renderProducts(allProducts);
+        return;
+      }
+      const q = query.toLowerCase();
+      const filtered = allProducts.filter(p =>
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.sku && p.sku.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.category_label && p.category_label.toLowerCase().includes(q))
+      );
+      renderProducts(filtered);
+    }
+
+    function openModal(product) {
+      const modal = document.getElementById('product-modal');
+      const title = document.getElementById('modal-title');
+      const editId = document.getElementById('edit-product-id');
+
+      if (product) {
+        title.textContent = 'Edit Product';
+        editId.value = product.id;
+        document.getElementById('field-name').value = product.name || '';
+        document.getElementById('field-sku').value = product.sku || '';
+        document.getElementById('field-category').value = product.category || 'glass';
+        document.getElementById('field-category-label').value = product.category_label || '';
+        document.getElementById('field-price').value = product.price || '';
+        document.getElementById('field-original-price').value = product.original_price || '';
+        document.getElementById('field-min-qty').value = product.min_qty || 1;
+        document.getElementById('field-unit').value = product.unit || 'ea';
+        document.getElementById('field-badge').value = product.badge || '';
+        document.getElementById('field-badge-type').value = product.badge_type || '';
+        document.getElementById('field-description').value = product.description || '';
+        document.getElementById('field-icon').value = product.icon || '📦';
+        document.getElementById('field-gradient').value = product.gradient || '';
+        document.getElementById('field-in-stock').checked = !!product.in_stock;
+        document.getElementById('field-sort-order').value = product.sort_order || 0;
+      } else {
+        title.textContent = 'Add Product';
+        editId.value = '';
+        document.getElementById('product-form').reset();
+        document.getElementById('field-icon').value = '📦';
+        document.getElementById('field-in-stock').checked = true;
+        document.getElementById('field-min-qty').value = 1;
+        document.getElementById('field-sort-order').value = 0;
+      }
+
+      modal.classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('product-modal').classList.remove('open');
+    }
+
+    function editProduct(id) {
+      const product = allProducts.find(p => p.id === id);
+      if (product) openModal(product);
+    }
+
+    async function saveProduct() {
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      const editId = document.getElementById('edit-product-id').value;
+      const payload = {
+        name: document.getElementById('field-name').value.trim(),
+        sku: document.getElementById('field-sku').value.trim(),
+        category: document.getElementById('field-category').value,
+        categoryLabel: document.getElementById('field-category-label').value.trim(),
+        price: parseFloat(document.getElementById('field-price').value),
+        originalPrice: parseFloat(document.getElementById('field-original-price').value),
+        minQty: parseInt(document.getElementById('field-min-qty').value, 10),
+        unit: document.getElementById('field-unit').value,
+        badge: document.getElementById('field-badge').value.trim() || null,
+        badgeType: document.getElementById('field-badge-type').value || null,
+        description: document.getElementById('field-description').value.trim(),
+        icon: document.getElementById('field-icon').value.trim() || '📦',
+        gradient: document.getElementById('field-gradient').value.trim() || 'linear-gradient(135deg,#f8fafc,#e2e8f0)',
+        inStock: document.getElementById('field-in-stock').checked,
+        sortOrder: parseInt(document.getElementById('field-sort-order').value, 10) || 0,
+      };
+
+      if (!payload.name || !payload.sku || isNaN(payload.price) || isNaN(payload.originalPrice) || isNaN(payload.minQty)) {
+        showToast('Please fill in all required fields.', 'error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+        return;
+      }
+
+      try {
+        if (editId) {
+          await API.updateProduct(editId, payload);
+          showToast('Product updated successfully.');
+        } else {
+          await API.createProduct(payload);
+          showToast('Product created successfully.');
+        }
+        closeModal();
+        await loadProducts();
+      } catch (err) {
+        console.error('Save product error:', err);
+        showToast(err.message || 'Failed to save product.', 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    async function deactivateProduct(id, name) {
+      if (!confirm('Deactivate "' + name + '"? This will mark the product as out of stock.')) return;
+
+      try {
+        await API.deleteProduct(id);
+        showToast('Product deactivated.');
+        await loadProducts();
+      } catch (err) {
+        console.error('Deactivate error:', err);
+        showToast(err.message || 'Failed to deactivate product.', 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      requireAdmin();
+      await loadUser();
+      await loadProducts();
+
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        filterProducts(e.target.value.trim());
+      });
+
+      document.getElementById('product-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cart - BaseLab Wholesale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="header-logo">BaseLab <span>Wholesale</span></a>
+    <nav class="header-nav">
+      <a href="/shop.html" class="nav-link">Shop</a>
+      <a href="/shop.html?category=bundles" class="nav-link">Bundles</a>
+    </nav>
+    <div class="header-actions">
+      <div class="header-user-state"></div>
+      <button class="cart-btn" onclick="openCartDrawer()">
+        🛒 Cart <span class="cart-badge" style="display:none">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="cart-page">
+  <div id="cart-content" style="padding:32px 0;">
+    <h1 style="margin-bottom:24px;">Your Cart</h1>
+    <div id="cart-loading">
+      <div class="cart-layout">
+        <div class="cart-items">
+          <div class="skeleton" style="height:100px;margin-bottom:16px;"></div>
+          <div class="skeleton" style="height:100px;margin-bottom:16px;"></div>
+          <div class="skeleton" style="height:100px;"></div>
+        </div>
+        <div><div class="skeleton" style="height:400px;"></div></div>
+      </div>
+    </div>
+    <div id="cart-main" style="display:none;"></div>
+    <div id="cart-empty" style="display:none; text-align:center; padding:60px 20px;">
+      <p style="font-size:48px;margin-bottom:16px;">🛒</p>
+      <h2 style="margin-bottom:8px;">Your cart is empty</h2>
+      <p style="margin-bottom:24px;">Browse our wholesale collection and start saving.</p>
+      <a href="/shop.html" class="btn btn-primary btn-lg">Browse Products</a>
+    </div>
+  </div>
+  <div id="success-content" style="display:none;">
+    <div class="success-screen">
+      <div class="success-icon">✅</div>
+      <h2>Order Confirmed!</h2>
+      <p id="success-order-id" style="font-size:18px;font-weight:700;color:var(--green);margin-bottom:8px;"></p>
+      <p>Thank you for your order! We'll send a confirmation email with your order details.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+        <a href="/shop.html" class="btn btn-primary">Continue Shopping</a>
+        <a href="/account.html#orders" class="btn btn-outline" id="view-order-btn">View Order</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div><div class="footer-title">Company</div><div class="footer-links"><a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a></div></div>
+      <div><div class="footer-title">Shop</div><div class="footer-links"><a href="/shop.html">All Products</a><a href="/shop.html?category=glass">Glass</a><a href="/shop.html?category=ceramic">Ceramic</a><a href="/shop.html?category=metal">Metal</a></div></div>
+      <div><div class="footer-title">Support</div><div class="footer-links"><a href="#">Contact</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">FAQ</a></div></div>
+      <div><div class="footer-title">Legal</div><div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a></div></div>
+    </div>
+    <div class="footer-bottom"><span>&copy; 2024 BaseLab Wholesale. All rights reserved.</span></div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/store.js"></script>
+<script>
+const US_STATES = [
+  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+  ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
+  ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
+  ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
+  ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
+  ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
+  ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
+  ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
+  ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
+  ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']
+];
+
+let cartData = null;
+let appliedPromo = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initCartDrawer();
+  loadUser();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('success') === 'true') {
+    document.getElementById('cart-content').style.display = 'none';
+    document.getElementById('success-content').style.display = 'block';
+    const orderId = params.get('order_id');
+    if (orderId) {
+      document.getElementById('success-order-id').textContent = 'Order #' + orderId;
+    }
+    if (!isLoggedIn()) {
+      document.getElementById('view-order-btn').style.display = 'none';
+    }
+    return;
+  }
+
+  await loadCart();
+});
+
+async function loadCart() {
+  try {
+    cartData = await API.getCart();
+    document.getElementById('cart-loading').style.display = 'none';
+
+    if (cartData.items.length === 0) {
+      document.getElementById('cart-empty').style.display = 'block';
+      document.getElementById('cart-main').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('cart-empty').style.display = 'none';
+    document.getElementById('cart-main').style.display = 'block';
+    renderCart();
+  } catch (e) {
+    document.getElementById('cart-loading').style.display = 'none';
+    document.getElementById('cart-empty').style.display = 'block';
+  }
+}
+
+function renderCart() {
+  const stateOptions = US_STATES.map(([v,l]) => '<option value="'+v+'">'+l+'</option>').join('');
+  const discount = appliedPromo ? appliedPromo.discount : 0;
+  const finalTotal = (cartData.total - discount).toFixed(2);
+  const retailValue = cartData.items.reduce((s, i) => s + i.product.originalPrice * i.qty, 0);
+
+  document.getElementById('cart-main').innerHTML = `
+    <div class="cart-layout">
+      <div>
+        <div class="cart-items" id="cart-items-list">
+          ${cartData.items.map(item => `
+            <div class="cart-item">
+              <div class="cart-item-icon" style="background:${item.product.gradient}">${item.product.icon}</div>
+              <div class="cart-item-info">
+                <div class="cart-item-name">${item.product.name}</div>
+                <div class="cart-item-sku">${item.product.sku} &middot; Min. ${item.product.minQty} ${item.product.unit}</div>
+                <div class="cart-item-price">$${item.product.price.toFixed(2)} / ${item.product.unit}</div>
+              </div>
+              <div class="cart-qty">
+                <button onclick="changeQty(${item.product.id}, ${item.qty - 1}, ${item.product.minQty})">−</button>
+                <input type="number" value="${item.qty}" min="${item.product.minQty}" onchange="changeQty(${item.product.id}, parseInt(this.value)||${item.product.minQty}, ${item.product.minQty})">
+                <button onclick="changeQty(${item.product.id}, ${item.qty + 1}, ${item.product.minQty})">+</button>
+              </div>
+              <div class="cart-item-total">$${item.lineTotal.toFixed(2)}</div>
+              <button class="cart-item-remove" onclick="removeItem(${item.product.id})">&times;</button>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:16px;display:flex;justify-content:space-between;">
+          <span style="font-size:14px;color:var(--text-muted);">${cartData.itemCount} items in cart</span>
+          <button class="btn btn-sm btn-outline" onclick="clearAllCart()">Clear Cart</button>
+        </div>
+      </div>
+
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <div class="summary-row"><span>Subtotal</span><span>$${cartData.subtotal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Shipping</span><span>${cartData.shipping === 0 ? '<span class="text-green">FREE</span>' : '$'+cartData.shipping.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Tax (8%)</span><span>$${cartData.tax.toFixed(2)}</span></div>
+        <div class="summary-row text-green"><span>Wholesale Savings</span><span>-$${cartData.savings.toFixed(2)}</span></div>
+        ${discount > 0 ? '<div class="summary-row text-green"><span>Promo Discount</span><span>-$'+discount.toFixed(2)+'</span></div>' : ''}
+        <div class="summary-row total"><span>Total</span><span>$${finalTotal}</span></div>
+        ${cartData.shipping > 0 ? '<p class="form-hint mt-1">Add $'+(200 - cartData.subtotal).toFixed(2)+' more for free shipping!</p>' : ''}
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Retail value: $${retailValue.toFixed(2)} — <span class="text-green">You save ${Math.round((1 - cartData.subtotal/retailValue)*100)}%!</span></p>
+
+        <div style="margin-top:20px;">
+          <div class="filter-label">Promo Code</div>
+          <div class="promo-form">
+            <input type="text" id="promo-input" placeholder="Enter code" value="${appliedPromo ? appliedPromo.code : ''}">
+            <button class="btn btn-sm btn-outline" onclick="applyPromo()">Apply</button>
+          </div>
+          <div class="promo-msg" id="promo-msg"></div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:24px 0;">
+        <h4 style="margin-bottom:16px;">Shipping Information</h4>
+        <form id="checkout-form" onsubmit="placeOrder(event)">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" name="firstName" required></div>
+            <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" name="lastName" required></div>
+          </div>
+          <div class="form-group"><label class="form-label">Company</label><input class="form-input" name="company" placeholder="Optional"></div>
+          <div class="form-group"><label class="form-label">Street Address *</label><input class="form-input" name="street" required></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">City *</label><input class="form-input" name="city" required></div>
+            <div class="form-group"><label class="form-label">State *</label><select class="form-input" name="state" required><option value="">Select State</option>${stateOptions}</select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">ZIP Code *</label><input class="form-input" name="zip" required></div>
+            <div class="form-group"><label class="form-label">Country</label><input class="form-input" name="country" value="US" readonly></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email *</label><input class="form-input" name="email" type="email" required></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" name="phone" placeholder="Optional"></div>
+
+          <h4 style="margin:24px 0 12px;">Payment Method</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+            <label class="form-checkbox"><input type="radio" name="paymentMethod" value="card" checked> 💳 Credit/Debit Card (Stripe)</label>
+            <label class="form-checkbox"><input type="radio" name="paymentMethod" value="paypal"> 🅿️ PayPal</label>
+            <label class="form-checkbox"><input type="radio" name="paymentMethod" value="net30"> 📋 Net 30 Terms</label>
+          </div>
+
+          <div class="form-group"><label class="form-label">Order Notes</label><textarea class="form-input" name="notes" placeholder="Special instructions (optional)" rows="2"></textarea></div>
+
+          <div id="checkout-error" class="form-error mb-2" style="display:none;"></div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="place-order-btn">Place Order — $${finalTotal}</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  if (AuthState.user) {
+    const form = document.getElementById('checkout-form');
+    if (AuthState.user.firstName) form.firstName.value = AuthState.user.firstName;
+    if (AuthState.user.lastName) form.lastName.value = AuthState.user.lastName;
+    if (AuthState.user.email) form.email.value = AuthState.user.email;
+    if (AuthState.user.company) form.company.value = AuthState.user.company;
+    if (AuthState.user.phone) form.phone.value = AuthState.user.phone;
+  }
+}
+
+async function changeQty(productId, newQty, minQty) {
+  if (newQty < minQty) {
+    if (newQty < 1) {
+      await removeItem(productId);
+      return;
+    }
+    newQty = minQty;
+  }
+  try {
+    cartData = await Cart.updateQty(productId, newQty);
+    renderCart();
+    renderCartDrawer();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function removeItem(productId) {
+  try {
+    cartData = await Cart.remove(productId);
+    if (cartData.items.length === 0) {
+      document.getElementById('cart-main').style.display = 'none';
+      document.getElementById('cart-empty').style.display = 'block';
+    } else {
+      renderCart();
+    }
+    renderCartDrawer();
+    showToast('Item removed');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function clearAllCart() {
+  if (!confirm('Clear all items from your cart?')) return;
+  try {
+    cartData = await Cart.clear();
+    document.getElementById('cart-main').style.display = 'none';
+    document.getElementById('cart-empty').style.display = 'block';
+    renderCartDrawer();
+    showToast('Cart cleared');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function applyPromo() {
+  const code = document.getElementById('promo-input').value.trim();
+  const msgEl = document.getElementById('promo-msg');
+  if (!code) { msgEl.textContent = 'Enter a promo code'; msgEl.className = 'promo-msg error'; return; }
+  try {
+    const res = await API.post('/api/promo/validate', { code, subtotal: cartData.subtotal });
+    if (res.valid) {
+      appliedPromo = { code, discount: res.discount };
+      msgEl.textContent = res.message;
+      msgEl.className = 'promo-msg success';
+      renderCart();
+    } else {
+      appliedPromo = null;
+      msgEl.textContent = res.message;
+      msgEl.className = 'promo-msg error';
+    }
+  } catch (e) {
+    msgEl.textContent = e.message; msgEl.className = 'promo-msg error';
+  }
+}
+
+async function placeOrder(e) {
+  e.preventDefault();
+  const form = document.getElementById('checkout-form');
+  const btn = document.getElementById('place-order-btn');
+  const errEl = document.getElementById('checkout-error');
+  btn.classList.add('btn-loading'); btn.disabled = true;
+  errEl.style.display = 'none';
+
+  const fd = new FormData(form);
+  const data = {
+    shipping: {
+      firstName: fd.get('firstName'), lastName: fd.get('lastName'),
+      company: fd.get('company') || undefined, street: fd.get('street'),
+      city: fd.get('city'), state: fd.get('state'), zip: fd.get('zip'),
+      country: fd.get('country'), email: fd.get('email'), phone: fd.get('phone') || undefined,
+    },
+    paymentMethod: fd.get('paymentMethod'),
+    promoCode: appliedPromo ? appliedPromo.code : undefined,
+    notes: fd.get('notes') || undefined,
+  };
+
+  try {
+    const res = await API.createOrder(data);
+    if (res.stripeUrl) {
+      window.location.href = res.stripeUrl;
+    } else {
+      window.location.href = '/cart.html?success=true&order_id=' + res.order.uuid;
+    }
+  } catch (e) {
+    btn.classList.remove('btn-loading'); btn.disabled = false;
+    if (e.errors && e.errors.length) {
+      errEl.innerHTML = e.errors.map(err => err.msg).join('<br>');
+    } else {
+      errEl.textContent = e.message || 'Failed to place order';
+    }
+    errEl.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

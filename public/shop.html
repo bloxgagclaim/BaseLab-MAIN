@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop - BaseLab Wholesale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Shop-specific layout */
+    .shop-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      min-height: 60vh;
+    }
+
+    /* Sidebar */
+    .shop-sidebar {
+      position: sticky;
+      top: 90px;
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .filter-group {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .filter-group h4 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #374151;
+      margin: 0 0 12px 0;
+    }
+
+    .filter-search {
+      position: relative;
+    }
+
+    .filter-search input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .filter-search input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .filter-search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+      width: 16px;
+      height: 16px;
+    }
+
+    .category-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .category-list li label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #374151;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background-color 0.15s;
+    }
+
+    .category-list li label:hover {
+      background: #f3f4f6;
+    }
+
+    .category-list li label input[type="radio"] {
+      accent-color: #6366f1;
+      margin: 0;
+    }
+
+    .category-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: #9ca3af;
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .price-range-inputs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .price-range-inputs input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .price-range-inputs input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .price-range-inputs span {
+      color: #9ca3af;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .qty-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .qty-options label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #374151;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background-color 0.15s;
+    }
+
+    .qty-options label:hover {
+      background: #f3f4f6;
+    }
+
+    .qty-options input[type="radio"] {
+      accent-color: #6366f1;
+      margin: 0;
+    }
+
+    .sort-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .sort-select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-clear-filters {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-clear-filters:hover {
+      background: #f3f4f6;
+      color: #374151;
+      border-color: #9ca3af;
+    }
+
+    /* Main content */
+    .shop-main {
+      min-width: 0;
+    }
+
+    .shop-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .shop-result-count {
+      font-size: 15px;
+      color: #6b7280;
+    }
+
+    .shop-result-count strong {
+      color: #111827;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .view-toggle button {
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #6b7280;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .view-toggle button.active {
+      background: #fff;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .view-toggle button svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Product grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .product-grid.list-view {
+      grid-template-columns: 1fr;
+    }
+
+    .product-grid.list-view .product-card {
+      display: grid;
+      grid-template-columns: 200px 1fr auto;
+      align-items: center;
+    }
+
+    .product-grid.list-view .product-link {
+      display: contents;
+    }
+
+    /* Skeleton loaders */
+    .skeleton-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .skeleton-image {
+      height: 200px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-body {
+      padding: 16px;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      margin-bottom: 10px;
+    }
+
+    .skeleton-line.short { width: 60%; }
+    .skeleton-line.medium { width: 80%; }
+    .skeleton-line.btn { height: 40px; margin-top: 12px; }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 8px 0;
+    }
+
+    .empty-state p {
+      color: #6b7280;
+      font-size: 15px;
+      margin: 0 0 24px 0;
+    }
+
+    .empty-state .btn {
+      display: inline-block;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .pagination button {
+      min-width: 40px;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+
+    .pagination button.active {
+      background: #6366f1;
+      color: #fff;
+      border-color: #6366f1;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pagination-ellipsis {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    /* Mobile sidebar toggle */
+    .mobile-filter-toggle {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    .mobile-filter-toggle svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .shop-layout {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+
+      .shop-sidebar {
+        position: fixed;
+        top: 0;
+        left: -300px;
+        width: 280px;
+        height: 100vh;
+        background: #fff;
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 24px 16px;
+        transition: left 0.3s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+      }
+
+      .shop-sidebar.open {
+        left: 0;
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        z-index: 999;
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      .mobile-filter-toggle {
+        display: inline-flex;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">BaseLab Wholesale</a>
+      <nav class="nav">
+        <a href="/shop.html" class="nav-link active">Shop</a>
+        <a href="/shop.html#categories" class="nav-link">Categories</a>
+        <a href="/pricing.html" class="nav-link">Pricing</a>
+      </nav>
+      <div class="header-actions">
+        <button class="cart-btn" onclick="openCartDrawer()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-badge" style="display:none;">0</span>
+        </button>
+        <div class="header-user-state"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile filter toggle -->
+  <div class="shop-layout">
+    <aside class="shop-sidebar" id="shop-sidebar">
+
+      <!-- Search -->
+      <div class="filter-group">
+        <h4>Search</h4>
+        <div class="filter-search">
+          <svg class="filter-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="filter-search" placeholder="Search products...">
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="filter-group" id="categories">
+        <h4>Categories</h4>
+        <ul class="category-list" id="filter-categories">
+          <li>
+            <label>
+              <input type="radio" name="category" value="" checked>
+              All Products
+              <span class="category-count" data-cat="">--</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="radio" name="category" value="glass-vases">
+              Glass Vases
+              <span class="category-count" data-cat="glass-vases">--</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="radio" name="category" value="ceramic">
+              Ceramic
+              <span class="category-count" data-cat="ceramic">--</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="radio" name="category" value="metal">
+              Metal
+              <span class="category-count" data-cat="metal">--</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="radio" name="category" value="bundles">
+              Bundles
+              <span class="category-count" data-cat="bundles">--</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="radio" name="category" value="supplies">
+              Supplies
+              <span class="category-count" data-cat="supplies">--</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="radio" name="category" value="specialty">
+              Specialty
+              <span class="category-count" data-cat="specialty">--</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-group">
+        <h4>Price Range</h4>
+        <div class="price-range-inputs">
+          <input type="number" id="filter-min-price" placeholder="Min" min="0" step="0.01">
+          <span>&ndash;</span>
+          <input type="number" id="filter-max-price" placeholder="Max" min="0" step="0.01">
+        </div>
+      </div>
+
+      <!-- Minimum Qty -->
+      <div class="filter-group">
+        <h4>Minimum Qty</h4>
+        <div class="qty-options">
+          <label>
+            <input type="radio" name="minQty" value="" checked>
+            Any
+          </label>
+          <label>
+            <input type="radio" name="minQty" value="under12">
+            Under 12
+          </label>
+          <label>
+            <input type="radio" name="minQty" value="12-24">
+            12 &ndash; 24
+          </label>
+          <label>
+            <input type="radio" name="minQty" value="bundles">
+            Bundles Only
+          </label>
+        </div>
+      </div>
+
+      <!-- Sort By -->
+      <div class="filter-group">
+        <h4>Sort By</h4>
+        <select class="sort-select" id="filter-sort">
+          <option value="featured">Featured</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="savings">Biggest Savings</option>
+          <option value="name_asc">Name A&ndash;Z</option>
+        </select>
+      </div>
+
+      <!-- Clear Filters -->
+      <button class="btn-clear-filters" id="btn-clear-filters">Clear Filters</button>
+
+    </aside>
+
+    <main class="shop-main">
+      <button class="mobile-filter-toggle" id="mobile-filter-toggle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        Filters
+      </button>
+
+      <div class="shop-topbar">
+        <div class="shop-result-count" id="shop-result-count">Loading products...</div>
+        <div class="view-toggle">
+          <button class="view-grid active" title="Grid view" id="view-grid-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-list" title="List view" id="view-list-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="product-grid" id="product-grid">
+        <!-- Skeleton loaders (8 cards) -->
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>
+      </div>
+
+      <div class="pagination" id="pagination" style="display:none;"></div>
+    </main>
+  </div>
+
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>BaseLab Wholesale</h4>
+        <p>Premium wholesale vases and decor for retailers, event planners, and designers. Unbeatable prices on bulk orders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="/shop.html?category=glass-vases">Glass Vases</a></li>
+          <li><a href="/shop.html?category=ceramic">Ceramic</a></li>
+          <li><a href="/shop.html?category=metal">Metal</a></li>
+          <li><a href="/shop.html?category=bundles">Bundles</a></li>
+          <li><a href="/shop.html?category=supplies">Supplies</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about.html">About Us</a></li>
+          <li><a href="/pricing.html">Pricing</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="/login.html">Login</a></li>
+          <li><a href="/register.html">Register</a></li>
+          <li><a href="/account.html">My Account</a></li>
+          <li><a href="/orders.html">Order History</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 BaseLab Wholesale. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/store.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      initCartDrawer();
+      loadUser();
+
+      // --- Read URL params to initialize filter state ---
+      const params = new URLSearchParams(window.location.search);
+      const state = {
+        category: params.get('category') || '',
+        search: params.get('search') || '',
+        sort: params.get('sort') || 'featured',
+        minPrice: params.get('minPrice') || '',
+        maxPrice: params.get('maxPrice') || '',
+        minQty: params.get('minQty') || '',
+        page: parseInt(params.get('page')) || 1,
+        limit: 24
+      };
+
+      // --- DOM references ---
+      const searchInput = document.getElementById('filter-search');
+      const categoryRadios = document.querySelectorAll('input[name="category"]');
+      const minPriceInput = document.getElementById('filter-min-price');
+      const maxPriceInput = document.getElementById('filter-max-price');
+      const qtyRadios = document.querySelectorAll('input[name="minQty"]');
+      const sortSelect = document.getElementById('filter-sort');
+      const clearBtn = document.getElementById('btn-clear-filters');
+      const productGrid = document.getElementById('product-grid');
+      const resultCountEl = document.getElementById('shop-result-count');
+      const paginationEl = document.getElementById('pagination');
+      const viewGridBtn = document.getElementById('view-grid-btn');
+      const viewListBtn = document.getElementById('view-list-btn');
+      const mobileToggle = document.getElementById('mobile-filter-toggle');
+      const sidebar = document.getElementById('shop-sidebar');
+      const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+      // --- Initialize filter controls from state ---
+      function syncControlsFromState() {
+        searchInput.value = state.search;
+        categoryRadios.forEach(r => { r.checked = r.value === state.category; });
+        minPriceInput.value = state.minPrice;
+        maxPriceInput.value = state.maxPrice;
+        qtyRadios.forEach(r => { r.checked = r.value === state.minQty; });
+        sortSelect.value = state.sort;
+      }
+
+      syncControlsFromState();
+
+      // --- URL sync ---
+      function updateURL() {
+        const p = new URLSearchParams();
+        if (state.category) p.set('category', state.category);
+        if (state.search) p.set('search', state.search);
+        if (state.sort && state.sort !== 'featured') p.set('sort', state.sort);
+        if (state.minPrice) p.set('minPrice', state.minPrice);
+        if (state.maxPrice) p.set('maxPrice', state.maxPrice);
+        if (state.minQty) p.set('minQty', state.minQty);
+        if (state.page > 1) p.set('page', state.page);
+        const qs = p.toString();
+        const url = window.location.pathname + (qs ? '?' + qs : '');
+        history.pushState(null, '', url);
+      }
+
+      // --- Skeleton rendering ---
+      function showSkeletons() {
+        let html = '';
+        for (let i = 0; i < 8; i++) {
+          html += '<div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line btn"></div></div></div>';
+        }
+        productGrid.innerHTML = html;
+        paginationEl.style.display = 'none';
+      }
+
+      // --- Empty state ---
+      function showEmptyState() {
+        productGrid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">&#128269;</div>
+            <h3>No products found</h3>
+            <p>Try adjusting your filters or search terms to find what you're looking for.</p>
+            <button class="btn btn-primary" onclick="document.getElementById('btn-clear-filters').click()">Clear Filters</button>
+          </div>
+        `;
+        paginationEl.style.display = 'none';
+      }
+
+      // --- Pagination rendering ---
+      function renderPagination(totalProducts, currentPage, limit) {
+        const totalPages = Math.ceil(totalProducts / limit);
+        if (totalPages <= 1) {
+          paginationEl.style.display = 'none';
+          return;
+        }
+
+        paginationEl.style.display = 'flex';
+        let html = '';
+
+        // Previous button
+        html += `<button ${currentPage <= 1 ? 'disabled' : ''} data-page="${currentPage - 1}">&laquo; Prev</button>`;
+
+        // Page numbers with ellipsis
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+        if (endPage - startPage + 1 < maxVisible) {
+          startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+          html += `<button data-page="1">1</button>`;
+          if (startPage > 2) {
+            html += `<span class="pagination-ellipsis">&hellip;</span>`;
+          }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          html += `<button data-page="${i}" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            html += `<span class="pagination-ellipsis">&hellip;</span>`;
+          }
+          html += `<button data-page="${totalPages}">${totalPages}</button>`;
+        }
+
+        // Next button
+        html += `<button ${currentPage >= totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">Next &raquo;</button>`;
+
+        paginationEl.innerHTML = html;
+
+        // Pagination click handlers
+        paginationEl.querySelectorAll('button[data-page]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const page = parseInt(btn.getAttribute('data-page'));
+            if (page >= 1 && page <= totalPages && page !== state.page) {
+              state.page = page;
+              updateURL();
+              loadProducts();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          });
+        });
+      }
+
+      // --- Update category counts ---
+      function updateCategoryCounts(counts) {
+        if (!counts) return;
+        document.querySelectorAll('.category-count').forEach(el => {
+          const cat = el.getAttribute('data-cat');
+          if (cat === '') {
+            // "All Products" - show total
+            const total = Object.values(counts).reduce((sum, v) => sum + v, 0);
+            el.textContent = total;
+          } else if (counts[cat] !== undefined) {
+            el.textContent = counts[cat];
+          } else {
+            el.textContent = '0';
+          }
+        });
+      }
+
+      // --- Load products ---
+      let loadingAbort = null;
+
+      async function loadProducts() {
+        showSkeletons();
+        resultCountEl.textContent = 'Loading products...';
+
+        // Build API params
+        const apiParams = {};
+        if (state.search) apiParams.search = state.search;
+        if (state.category) apiParams.category = state.category;
+        if (state.sort) apiParams.sort = state.sort;
+        if (state.minPrice) apiParams.minPrice = state.minPrice;
+        if (state.maxPrice) apiParams.maxPrice = state.maxPrice;
+        if (state.minQty) apiParams.minQty = state.minQty;
+        apiParams.page = state.page;
+        apiParams.limit = state.limit;
+
+        try {
+          const data = await getProducts(apiParams);
+          const products = data.products || [];
+          const total = data.total || products.length;
+          const page = data.page || state.page;
+          const totalPages = data.totalPages || Math.ceil(total / state.limit);
+
+          // Update category counts if returned
+          if (data.categoryCounts) {
+            updateCategoryCounts(data.categoryCounts);
+          }
+
+          // Update result count
+          if (total === 0) {
+            resultCountEl.innerHTML = 'Showing <strong>0</strong> products';
+            showEmptyState();
+            return;
+          }
+
+          const start = (page - 1) * state.limit + 1;
+          const end = Math.min(page * state.limit, total);
+          resultCountEl.innerHTML = `Showing <strong>${start}&ndash;${end}</strong> of <strong>${total}</strong> products`;
+
+          // Render products
+          productGrid.innerHTML = products.map(p => buildProductCard(p)).join('');
+
+          // Render pagination
+          renderPagination(total, page, state.limit);
+
+        } catch (err) {
+          console.error('Failed to load products:', err);
+          productGrid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <div class="empty-state-icon">&#9888;&#65039;</div>
+              <h3>Failed to load products</h3>
+              <p>${err.message || 'An unexpected error occurred. Please try again.'}</p>
+              <button class="btn btn-primary" onclick="location.reload()">Retry</button>
+            </div>
+          `;
+          resultCountEl.textContent = 'Error loading products';
+          paginationEl.style.display = 'none';
+        }
+      }
+
+      // --- Debounce utility ---
+      function debounce(fn, delay) {
+        let timer = null;
+        return function () {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn.apply(this, arguments), delay);
+        };
+      }
+
+      // --- Filter change handlers ---
+      function onFilterChange() {
+        state.page = 1;
+        updateURL();
+        loadProducts();
+      }
+
+      // Search input (debounced)
+      searchInput.addEventListener('input', debounce(() => {
+        state.search = searchInput.value.trim();
+        onFilterChange();
+      }, 400));
+
+      // Category radios
+      categoryRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          state.category = radio.value;
+          onFilterChange();
+        });
+      });
+
+      // Price range (debounced)
+      const debouncedPriceChange = debounce(() => {
+        state.minPrice = minPriceInput.value;
+        state.maxPrice = maxPriceInput.value;
+        onFilterChange();
+      }, 500);
+
+      minPriceInput.addEventListener('input', debouncedPriceChange);
+      maxPriceInput.addEventListener('input', debouncedPriceChange);
+
+      // Minimum qty radios
+      qtyRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          state.minQty = radio.value;
+          onFilterChange();
+        });
+      });
+
+      // Sort select
+      sortSelect.addEventListener('change', () => {
+        state.sort = sortSelect.value;
+        onFilterChange();
+      });
+
+      // Clear filters
+      clearBtn.addEventListener('click', () => {
+        state.category = '';
+        state.search = '';
+        state.sort = 'featured';
+        state.minPrice = '';
+        state.maxPrice = '';
+        state.minQty = '';
+        state.page = 1;
+        syncControlsFromState();
+        updateURL();
+        loadProducts();
+      });
+
+      // --- View toggle ---
+      viewGridBtn.addEventListener('click', () => {
+        productGrid.classList.remove('list-view');
+        viewGridBtn.classList.add('active');
+        viewListBtn.classList.remove('active');
+      });
+
+      viewListBtn.addEventListener('click', () => {
+        productGrid.classList.add('list-view');
+        viewListBtn.classList.add('active');
+        viewGridBtn.classList.remove('active');
+      });
+
+      // --- Mobile sidebar ---
+      mobileToggle.addEventListener('click', () => {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+
+      sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+
+      // --- Handle browser back/forward ---
+      window.addEventListener('popstate', () => {
+        const p = new URLSearchParams(window.location.search);
+        state.category = p.get('category') || '';
+        state.search = p.get('search') || '';
+        state.sort = p.get('sort') || 'featured';
+        state.minPrice = p.get('minPrice') || '';
+        state.maxPrice = p.get('maxPrice') || '';
+        state.minQty = p.get('minQty') || '';
+        state.page = parseInt(p.get('page')) || 1;
+        syncControlsFromState();
+        loadProducts();
+      });
+
+      // --- Initial load ---
+      loadProducts();
+    });
+  </script>
+</body>
+</html>

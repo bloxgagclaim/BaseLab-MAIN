@@ -1,4 +1,6 @@
 node_modules/
 .env
 baselab.db
+baselab.db-shm
+baselab.db-wal
 *.db-journal
